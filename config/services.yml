@@ -1,0 +1,11 @@
+services:
+    javiexin.chgposttime.listener:
+        class: javiexin\chgposttime\event\listener
+        arguments:
+            - @dbal.conn
+            - @user
+            - @auth
+            - @request
+            - @service_container
+            - %core.root_path%
+            - %core.php_ext%
