@@ -11,6 +11,7 @@
 namespace javiexin\chgposttime\event;
 
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Symfony\Component\DependencyInjection\ContainerInterface;
 
 /**
  * Event listener
@@ -57,7 +58,7 @@ class listener implements EventSubscriberInterface
 		$this->php_ext = $php_ext;
 
 		// Add language vars
-		$this->user->add_lang_ext('javiexin/chgposttime', 'mcp_chgposttime');
+		$this->user->add_lang_ext('javiexin/chgposttime', 'info_mcp_chgposttime');
 	}
 
 	/**
@@ -134,8 +135,8 @@ class listener implements EventSubscriberInterface
 			' WHERE post_id = ' . (int) $post_id;
 		$this->db->sql_query($sql);
 
-		include_once($this->root_path . 'includes/functions_admin.' . $this->phpEx);
-		include_once($this->root_path . 'includes/functions_mcp.' . $this->phpEx);
+		include_once($this->root_path . 'includes/functions_admin.' . $this->php_ext);
+		include_once($this->root_path . 'includes/functions_mcp.' . $this->php_ext);
 
 		sync('topic', 'topic_id', $post_info['topic_id'], true);
 		sync('forum', 'forum_id', $post_info['forum_id'], true);
@@ -150,11 +151,18 @@ class listener implements EventSubscriberInterface
 
 		$post_info = $post_info[$post_id];
 
-		$to_newtime = $user->format_date($update_time);
+		$to_newtime = $this->user->format_date($update_time);
 
 		// Now add log entry
 		$phpbb_log = $this->container->get('log');
-		$phpbb_log->add('mod', $post_info['forum_id'], $post_info['topic_id'], 'LOG_MCP_JX_CHANGE_POSTTIME', $post_info['topic_title'], $from_oldtime, $to_newtime, $post_id);
+		$phpbb_log->add('mod', $this->user->data['user_id'], $this->user->ip, 'LOG_MCP_JX_CHANGE_POSTTIME', false, array(
+				'forum_id'		=> (int) $post_info['forum_id'],
+				'topic_id'		=> (int) $post_info['topic_id'],
+				$post_info['topic_title'],
+				$from_oldtime,
+				$to_newtime,
+				(int) $post_id,
+			));
 
 		$event['post_info'] = $post_info;
 	}

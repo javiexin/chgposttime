@@ -12,7 +12,8 @@
 			"name": "Javier Lopez (javiexin)",
 			"email": "javiexin@gmail.com",
 			"role": "Developer"
-		}	],
+		}
+	],
 	"require": {
 		"php": ">=5.3.3"
 	},
