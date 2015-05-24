@@ -1,7 +1,7 @@
 <?php
 /**
  *
- * Change Post Time [English]
+ * Change Post Time [Italian]
  *
  * @copyright (c) 2015 javiexin ( www.exincastillos.es )
  * @license http://opensource.org/licenses/gpl-2.0.php GNU General Public License v2
