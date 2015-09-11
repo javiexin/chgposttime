@@ -39,7 +39,7 @@ if (empty($lang) || !is_array($lang))
 //
 
 $lang = array_merge($lang, array(
-	'JX_CHANGE_POST_TIME'				=> 'Modifier l’heure du message',
+	'JX_CHANGE_POST_TIME'				=> 'Modifier l’heure et la date du message',
 	'JX_CHANGE_POST_TIME_DATE'			=> 'AAAA-MM-JJ',
 	'JX_CHANGE_POST_TIME_TIME'			=> 'HH:MM',
 
