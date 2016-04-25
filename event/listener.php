@@ -118,7 +118,11 @@ class listener implements EventSubscriberInterface
 		$hour = $this->request->variable('jx_hour', -1);
 		$minute = $this->request->variable('jx_minute', -1);
 
-		$from_time_ary = getdate($post_info['post_time']);
+//Dook		
+		//$from_time_ary = getdate($post_info['post_time']);
+        $from_time_ary = array('seconds','minutes','hours','mday','wday','mon','year','yday','weekday','month',0);
+        $from_time_ary = array_combine($from_time_ary,split(":",$this->user->format_date($post_info['post_time'],'s:i:H:d:w:m:Y:z:l:F:U')));
+//Dook
 
 		$year = ($year) ? $year : $from_time_ary['year'];
 		$month = ($month) ? $month : $from_time_ary['mon'];
@@ -128,7 +132,10 @@ class listener implements EventSubscriberInterface
 		$second = 0;
 
 		// Use mktime() function to create UNIX timestamp
-		$update_time = mktime($hour, $minute, $second, $month, $day, $year);
+//Dook
+//		$update_time = mktime($hour, $minute, $second, $month, $day, $year);
+        $update_time = $this->user->get_timestamp_from_format('s:i:H:d:m:Y',sprintf('%02d:%02d:%02d:%02d:%02d:%02d', $second,$minute,$hour,$day,$month,$year)); 
+//Dook		
 
 		// Update post_time in database
 		$sql = 'UPDATE ' . POSTS_TABLE . ' SET post_time = ' . (int) $update_time . 
@@ -178,7 +185,11 @@ class listener implements EventSubscriberInterface
 		$post_info = $event['post_info'];
 		$mcp_post_template_data = $event['mcp_post_template_data'];
 
-		$time_ary = getdate($post_info['post_time']);
+//Dook		
+//		$time_ary = getdate($post_info['post_time']);
+     $time_ary = array('seconds','minutes','hours','mday','wday','mon','year','yday','weekday','month',0);
+     $time_ary = array_combine($time_ary,split(":",$this->user->format_date($post_info['post_time'],'s:i:H:d:w:m:Y:z:l:F:U')));
+//Dook
 
 		$mcp_post_template_data = array_merge($mcp_post_template_data, array(
 				'S_JX_CAN_CHGPOSTTIME'		=> $this->auth->acl_get('m_chgposttime', $post_info['forum_id']),
