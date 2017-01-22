@@ -2,8 +2,8 @@
 	"name": "javiexin/chgposttime",
 	"type": "phpbb-extension",
 	"description": "Adds the option for a moderator to change the posting date and time of a post.",
-	"version": "1.0.0",
-	"time": "2015-06-18",
+	"version": "1.0.1",
+	"time": "2017-01-18",
 	"keywords": ["phpbb", "extension", "chgposttime", "change", "post", "time"],
 	"license": "GPL-2.0",
 	"authors": [
@@ -19,7 +19,7 @@
 	"extra": {
 		"display-name": "Change Post Time",
 		"soft-require": {
-			"phpbb/phpbb": ">=3.1.5,<3.2.*@dev"
+			"phpbb/phpbb": ">=3.1.5,<3.3.0@dev"
 		}
 	}
 }

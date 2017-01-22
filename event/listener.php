@@ -110,7 +110,10 @@ class listener implements EventSubscriberInterface
 		{
 			trigger_error('NOT_AUTHORISED');
 		}
-		$from_oldtime = $this->user->format_date($post_info['post_time']);
+
+		// Get the original time, and format it according to the user timezone
+		$oldtime = $this->user->create_datetime()->setTimestamp($post_info['post_time']);
+		$from_oldtime = $oldtime->format();
 
 		$year = $this->request->variable('jx_year', 0);
 		$month = $this->request->variable('jx_month', 0);
@@ -118,30 +121,34 @@ class listener implements EventSubscriberInterface
 		$hour = $this->request->variable('jx_hour', -1);
 		$minute = $this->request->variable('jx_minute', -1);
 
-		$from_time_ary = getdate($post_info['post_time']);
+		$year = ($year) ? $year : (int) $oldtime->format('Y');
+		$month = ($month) ? $month : (int) $oldtime->format('n');
+		$day = ($day) ? $day : (int) $oldtime->format('j');
+		$hour = ($hour>=0) ? $hour : (int) $oldtime->format('G');
+		$minute = ($minute>=0) ? $minute : (int) $oldtime->format('i');
 
-		$year = ($year) ? $year : $from_time_ary['year'];
-		$month = ($month) ? $month : $from_time_ary['mon'];
-		$day = ($day) ? $day : $from_time_ary['mday'];
-		$hour = ($hour>=0) ? $hour : $from_time_ary['hours'];
-		$minute = ($minute>=0) ? $minute : $from_time_ary['minutes'];
-		$second = 0;
-
-		// Use mktime() function to create UNIX timestamp
-		$update_time = mktime($hour, $minute, $second, $month, $day, $year);
+		// Use user timezone to create UNIX timestamp
+		$newtime = $this->user->create_datetime()->setDate($year, $month, $day)->setTime($hour, $minute);
+		$update_time = $newtime->getTimestamp();
 
 		// Update post_time in database
 		$sql = 'UPDATE ' . POSTS_TABLE . ' SET post_time = ' . (int) $update_time . 
 			' WHERE post_id = ' . (int) $post_id;
 		$this->db->sql_query($sql);
 
-		include_once($this->root_path . 'includes/functions_admin.' . $this->php_ext);
-		include_once($this->root_path . 'includes/functions_mcp.' . $this->php_ext);
-
+		// Synchronize topic and forum
+		if (!function_exists('sync'))
+		{
+			include($this->root_path . 'includes/functions_admin.' . $this->php_ext);
+		}
 		sync('topic', 'topic_id', $post_info['topic_id'], true);
 		sync('forum', 'forum_id', $post_info['forum_id'], true);
 
 		// Renew post info
+		if (!function_exists('phpbb_get_post_data'))
+		{
+			include($this->root_path . 'includes/functions_mcp.' . $this->php_ext);
+		}
 		$post_info = phpbb_get_post_data(array($post_id), false, true);
 
 		if (!sizeof($post_info))
@@ -151,7 +158,7 @@ class listener implements EventSubscriberInterface
 
 		$post_info = $post_info[$post_id];
 
-		$to_newtime = $this->user->format_date($update_time);
+		$to_newtime = $newtime->format();
 
 		// Now add log entry
 		$phpbb_log = $this->container->get('log');
@@ -178,15 +185,15 @@ class listener implements EventSubscriberInterface
 		$post_info = $event['post_info'];
 		$mcp_post_template_data = $event['mcp_post_template_data'];
 
-		$time_ary = getdate($post_info['post_time']);
+		$oldtime = $this->user->create_datetime()->setTimestamp($post_info['post_time']);
 
 		$mcp_post_template_data = array_merge($mcp_post_template_data, array(
 				'S_JX_CAN_CHGPOSTTIME'		=> $this->auth->acl_get('m_chgposttime', $post_info['forum_id']),
-				'JX_POST_DATE_YEAR'			=> $time_ary['year'],
-				'JX_POST_DATE_MONTH'		=> $time_ary['mon'],
-				'JX_POST_DATE_DAY'			=> $time_ary['mday'],
-				'JX_POST_TIME_HOUR'			=> $time_ary['hours'],
-				'JX_POST_TIME_MINUTE'		=> $time_ary['minutes'],
+				'JX_POST_DATE_YEAR'			=> (int) $oldtime->format('Y'),
+				'JX_POST_DATE_MONTH'		=> (int) $oldtime->format('n'),
+				'JX_POST_DATE_DAY'			=> (int) $oldtime->format('j'),
+				'JX_POST_TIME_HOUR'			=> (int) $oldtime->format('G'),
+				'JX_POST_TIME_MINUTE'		=> (int) $oldtime->format('i'),
 			));
 
 		$event['mcp_post_template_data'] = $mcp_post_template_data;
